@@ -7,10 +7,12 @@ class Account {
 private:
     double balance;
     string pin;
+    string name;
     bool isDefaultBank;
 
 public:
-    Account(double initialBalance = 0.0, string initialPin = "1234", bool defaultBank = true) : balance(initialBalance), pin(initialPin), isDefaultBank(defaultBank) {}
+    Account(double initialBalance = 0.0, string initialPin = "1234", string initialName = "", bool defaultBank = true) 
+        : balance(initialBalance), pin(initialPin), name(initialName), isDefaultBank(defaultBank) {}
 
     void displayBalance() {
         cout << "Current Balance: $" << balance << endl;
@@ -47,12 +49,17 @@ public:
                 return;
         }
 
+        if (amount > 25000) {
+            cout << "Transaction not allowed. Maximum withdrawal per transaction is $25000." << endl;
+            return;
+        }
+
         if (amount > balance) {
             cout << "Insufficient funds!" << endl;
         } else {
             balance -= amount;
             if (!isDefaultBank) {
-                double taxAmount = amount * 0.10;
+                double taxAmount = 50.00;
                 balance -= taxAmount;
                 cout << "Withdrawal successful. Tax of $" << taxAmount << " has been cut. New balance: $" << balance << endl;
             } else {
@@ -72,7 +79,6 @@ public:
             } else {
                 cout << "Thank you for choosing to go green! You're helping to reduce paper waste." << endl;
                 cout << "Here's a virtual tree to celebrate your eco-friendly choice:" << endl;
-               
             }
         }
     }
@@ -97,79 +103,70 @@ public:
     void setDefaultBank(bool defaultBank) {
         isDefaultBank = defaultBank;
     }
+
+    string getName() {
+        return name;
+    }
 };
 
 int main() {
-    cout << "Welcome to HBL Banking" << endl;
-    Account account(1000.0, "1234"); // initial balance of $1000 and PIN 1234
+    Account account1(50000.0, "1234", "Engr.Aimal khan", true); // default bank account
+    Account account2(60000.0, "5678", "Engr.Ashar Amir", false); // non-default bank account
+    Account account3(70000.0, "9012", "Engr.Ahsan", false); // non-default bank account
+
+    Account* accounts[] = {&account1, &account2, &account3};
+    string pins[] = {"1234", "5678", "9012"};
+    string names[] = {"Engr.Aimal khan", "Engr.Ashar Amir", "Engr.Ahsan"};
 
     string enteredPin;
+    cout << "Enter your PIN: ";
+    cin >> enteredPin;
+
     bool authenticated = false;
+    Account* selectedAccount = nullptr;
 
-    do {
-        cout << "Enter your PIN: ";
-        cin >> enteredPin;
-
-        if (account.authenticate(enteredPin)) {
+    for (int i = 0; i < 3; i++) {
+        if (pins[i] == enteredPin) {
             authenticated = true;
-        } else {
-            cout << "Invalid PIN. Try again!" << endl;
+            selectedAccount = accounts[i];
+            break;
         }
-    } while (!authenticated);
-
-    char isDefault;
-    cout << "Are you a HBL bank customer? (y/n): ";
-    cin >> isDefault;
-
-    if (isDefault == 'y' || isDefault == 'Y') {
-        account.setDefaultBank(true);
-    } else {
-        account.setDefaultBank(false);
     }
 
-    int choice;
+    if (!authenticated) {
+        cout << "Invalid PIN. Try again!" << endl;
+        return 1;
+    }
+
+    cout << "Welcome, " << selectedAccount->getName() << "!" << endl;
+
+    int option;
     do {
         cout << "HBL ATM " << endl;
         cout << "1. Balance Inquiry" << endl;
-        cout << "2. Withdrawal" << endl;
+                cout << "2. Withdrawal" << endl;
         cout << "3. Deposit" << endl;
-        cout << "4. Change PIN" << endl;
-        cout << "5. Exit" << endl;
+        cout << "4. Exit" << endl;
         cout << "Choose an option: ";
-        cin >> choice;
+        cin >> option;
 
-        switch (choice) {
+        switch (option) {
             case 1:
-                account.displayBalance();
+                selectedAccount->displayBalance();
                 break;
             case 2:
-                account.withdraw();
+                selectedAccount->withdraw();
                 break;
             case 3:
-                account.deposit();
+                selectedAccount->deposit();
                 break;
-            case 4: {  
-                string oldPin, newPin;
-                cout << "Enter old PIN: ";
-                cin >> oldPin;
-
-                if (account.authenticate(oldPin)) {
-                    cout << "Enter new PIN: ";
-                    cin >> newPin;
-                    account.setPin(newPin);
-                    cout << "PIN changed successfully!" << endl;
-                } else {
-                    cout << "Invalid old PIN. PIN not changed." << endl;
-                }
-                break;
-            }
-            case 5:
+            case 4:
                 cout << "Goodbye!" << endl;
                 break;
             default:
                 cout << "Invalid option. Try again!" << endl;
         }
-    } while (choice != 5);
+    } while (option != 4);
 
     return 0;
 }
