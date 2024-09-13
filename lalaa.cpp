@@ -1,9 +1,3 @@
-
-
-
-
-
-
 #include<iostream>
 
 class student{
